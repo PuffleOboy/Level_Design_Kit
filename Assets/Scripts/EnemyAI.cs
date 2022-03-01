@@ -7,10 +7,12 @@ public class EnemyAI : MonoBehaviour
     public float speed;
     Transform target;
 
-    public LayerMask layerMask;
+    protected Rigidbody2D rb2d;
 
-    DetectingPlayer detector;
+    public DetectingPlayer detector;
     public float idleRadius, chaseRadius;
+
+    private HealthSystem EnemyHealth;
 
     public enum EnemyState
     {
@@ -23,9 +25,10 @@ public class EnemyAI : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        rb2d = GetComponent<Rigidbody2D>();
+        rb2d.isKinematic = true;
         state = EnemyState.Idle;
-        detector = GetComponentInChildren<DetectingPlayer>();
-
+        EnemyHealth = new HealthSystem(7);
     }
 
     // Update is called once per frame
@@ -48,10 +51,12 @@ public class EnemyAI : MonoBehaviour
     }
     void SightCheck()
     {
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, target.position - transform.position, 100, layerMask);
+        
 
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, target.position - transform.position, Mathf.Infinity, LayerMask.GetMask("Player"));
         if (hit.collider.gameObject.tag == "Player")
         {
+            
             state = EnemyState.Chase;
             detector.Radius(chaseRadius);
         }
@@ -73,6 +78,24 @@ public class EnemyAI : MonoBehaviour
         target = null;
         state = EnemyState.Idle;
         detector.Radius(idleRadius);
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        // If the other thing has a specific tag. It's a good idea to limit the detection to specific things
+        if (collision.gameObject.CompareTag("Bullet"))
+        {
+            // Destroy this gameobject?
+            EnemyHealth.Damage(1);
+            Debug.Log("Health: " + EnemyHealth.GetHealth());
+
+            if (EnemyHealth.GetHealth() == 0)
+            {
+                Destroy(gameObject);
+            }
+            // Destroy the gameobject this one collided with? Uncomment this next line
+            //Destroy(collision.gameObject);
+        }
     }
 
 }

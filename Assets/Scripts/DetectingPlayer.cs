@@ -4,14 +4,13 @@ using UnityEngine;
 
 public class DetectingPlayer : MonoBehaviour
 {
-    EnemyAI ai;
+    public EnemyAI ai;
     CircleCollider2D collider;
 
 
     // Start is called before the first frame update
     void Start()
     {
-        ai = GetComponentInParent<EnemyAI>();
         collider = GetComponent<CircleCollider2D>();
     }
 
